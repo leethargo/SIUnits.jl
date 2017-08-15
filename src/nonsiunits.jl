@@ -18,5 +18,5 @@ for (func,funcd) in ((:sin,:sind),
                      (:cot,:cotd),
                      (:sec,:secd),
                      (:csc,:cscd))
-    @eval $func{T}(θ::NonSIQuantity{T,$(typeof(Degree))}) = $funcd(θ.val)
+    @eval $func(θ::NonSIQuantity{T,$(typeof(Degree))}) where {T} = $funcd(θ.val)
 end
