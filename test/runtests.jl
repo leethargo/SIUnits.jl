@@ -2,19 +2,10 @@ using SIUnits
 using SIUnits.ShortUnits
 using Base.Test
 
-if VERSION <= v"0.3-"
-    macro test_throws_compat(a,b)
-        esc(:(@test_throws $b))
-    end
-else
-    macro test_throws_compat(a,b)
-        esc(:(@test_throws $a $b))
-    end
+macro test_throws_compat(a,b)
+    esc(:(@test_throws $a $b))
 end
 
-if VERSION <= v"0.4.0-dev+3338"
-    const AssertionError = ErrorException
-end
 
 # Test types
 
@@ -63,7 +54,7 @@ OneNewton = 1*(kg*m/s^2)
 
 # Issue #2
 
-immutable note{T<:Real}
+struct note{T<:Real}
     pitch::quantity(T,Hz)     #has dimensions of inverse time
     duration::quantity(T,s) #has dimensions of time
     sustained::Bool
