@@ -69,13 +69,15 @@ module SIUnits
     end
     # Forward some linear range transformations to the wrapped range
     rangequantity(::Type{R},tup::UnitTuple) where {R<:Range} = SIRange{R,eltype(R),tup[1],tup[2],tup[3],tup[4],tup[5],tup[6],tup[7],tup[8],tup[9]}
-    for func in (VERSION < v"0.3-" ? (:+, :-) : (:.+, :.-)) # version 0.3 swaps fallbacks
-        @eval $(func)(x::SIRanges{T,m,kg,s,A,K,mol,cd,rad,sr}, y::SIQuantity{S,m,kg,s,A,K,mol,cd,rad,sr}) where {T,S,m,kg,s,A,K,mol,cd,rad,sr} = (val = $(func)(x.val, y.val); SIRange{typeof(val),eltype(val),m,kg,s,A,K,mol,cd,rad,sr}(val))
-        @eval $(func)(x::SIQuantity{T,m,kg,s,A,K,mol,cd,rad,sr}, y::SIRanges{S,m,kg,s,A,K,mol,cd,rad,sr}) where {T,S,m,kg,s,A,K,mol,cd,rad,sr} = (val = $(func)(x.val, y.val); SIRange{typeof(val),eltype(val),m,kg,s,A,K,mol,cd,rad,sr}(val))
-    end
-    ./(x::SIRanges, y::SIQuantity) = (val = ./(x.val, y.val); rangequantity(typeof(val),tup(x)-tup(y))(val))
-    .*(x::SIRanges, y::SIQuantity) = (val = .*(x.val, y.val); rangequantity(typeof(val),tup(x)+tup(y))(val))
-    .*(x::SIQuantity, y::SIRanges) = (val = .*(x.val, y.val); rangequantity(typeof(val),tup(x)+tup(y))(val))
+
+    Base.broadcast(::typeof(+), x::SIRanges{T,m,kg,s,A,K,mol,cd,rad,sr}, y::SIQuantity{S,m,kg,s,A,K,mol,cd,rad,sr}) where {T,S,m,kg,s,A,K,mol,cd,rad,sr} = (val = .+(x.val, y.val); SIRange{typeof(val),eltype(val),m,kg,s,A,K,mol,cd,rad,sr}(val))
+    Base.broadcast(::typeof(+), x::SIQuantity{T,m,kg,s,A,K,mol,cd,rad,sr}, y::SIRanges{S,m,kg,s,A,K,mol,cd,rad,sr}) where {T,S,m,kg,s,A,K,mol,cd,rad,sr} = (val = .+(x.val, y.val); SIRange{typeof(val),eltype(val),m,kg,s,A,K,mol,cd,rad,sr}(val))
+    Base.broadcast(::typeof(-), x::SIRanges{T,m,kg,s,A,K,mol,cd,rad,sr}, y::SIQuantity{S,m,kg,s,A,K,mol,cd,rad,sr}) where {T,S,m,kg,s,A,K,mol,cd,rad,sr} = (val = .-(x.val, y.val); SIRange{typeof(val),eltype(val),m,kg,s,A,K,mol,cd,rad,sr}(val))
+    Base.broadcast(::typeof(-), x::SIQuantity{T,m,kg,s,A,K,mol,cd,rad,sr}, y::SIRanges{S,m,kg,s,A,K,mol,cd,rad,sr}) where {T,S,m,kg,s,A,K,mol,cd,rad,sr} = (val = .-(x.val, y.val); SIRange{typeof(val),eltype(val),m,kg,s,A,K,mol,cd,rad,sr}(val))
+
+    Base.broadcast(::typeof(/), x::SIRanges, y::SIQuantity) = (val = ./(x.val, y.val); rangequantity(typeof(val),tup(x)-tup(y))(val))
+    Base.broadcast(::typeof(*), x::SIRanges, y::SIQuantity) = (val = .*(x.val, y.val); rangequantity(typeof(val),tup(x)+tup(y))(val))
+    Base.broadcast(::typeof(*), x::SIQuantity, y::SIRanges) = (val = .*(x.val, y.val); rangequantity(typeof(val),tup(x)+tup(y))(val))
     # Version 0.2 assumes all Ranges have start and len fields in ==, and
     # the fallback in 0.3 needlessly iterates through all values
     ==(r::SIRanges, s::SIRanges) = r.val == s.val && tup(r) == tup(s)
